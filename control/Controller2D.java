@@ -83,14 +83,6 @@ public class Controller2D implements Controller {
                 }
             }
         });
-
-        panel.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                panel.resize();
-                initObjects(panel.getRaster());
-            }
-        });
     }
 
     private void update() {

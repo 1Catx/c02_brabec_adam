@@ -19,7 +19,7 @@ public class Panel extends JPanel {
     private static final int FPS = 1000 / 20;
     public static final int WIDTH = 800, HEIGHT = 600;
 
-    Panel() {
+    public Panel(int width, int height) {
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
         raster = new RasterBufferedImage(WIDTH, HEIGHT);
         raster.setClearColor(Color.BLACK.getRGB());
@@ -31,17 +31,6 @@ public class Panel extends JPanel {
         super.paintComponent(g);
         raster.repaint(g);
         // pro zájemce - co dělá observer - https://stackoverflow.com/a/1684476
-    }
-
-    public void resize(){
-        if (this.getWidth()<1 || this.getHeight()<1)
-            return;
-        if (this.getWidth()<=raster.getWidth() && this.getHeight()<=raster.getHeight()) //no resize if new is smaller
-            return;
-        RasterBufferedImage newRaster = new RasterBufferedImage(this.getWidth(), this.getHeight());
-
-        newRaster.draw(raster);
-        raster = newRaster;
     }
 
     private void setLoop() {

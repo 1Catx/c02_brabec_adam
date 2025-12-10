@@ -9,7 +9,7 @@ public class AppStart {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            Window window = new Window();
+            Window window = new Window(800, 600);
             new Controller2D(window.getPanel());
             window.setVisible(true);
         });

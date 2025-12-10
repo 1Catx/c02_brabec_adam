@@ -1,16 +1,10 @@
 package rasterize;
 
 public interface Raster {
-
-    void clear();
-
-    void setClearColor(int color);
-
-    int getWidth() ;
-
-    int getHeight();
-
+    void setPixel(int x, int y, int color);
     int getPixel(int x, int y);
-
-    void setPixel(int x, int y, int color) ;
+    int getWidth();
+    int getHeight();
+    void clear();
+    void setClearColor(int color);
 }

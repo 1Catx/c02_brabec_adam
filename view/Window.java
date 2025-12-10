@@ -1,32 +1,25 @@
 package view;
 
 import javax.swing.*;
-import java.awt.*;
 
-public class Window extends JFrame {
+public class Window extends JFrame { //vytvoří instanci *Panelu*, do kterého se poté kreslí
 
     private final Panel panel;
 
-    public Window() {
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setTitle("UHK FIM PGRF : " + this.getClass().getName());
-
-
-        panel = new Panel();
-
-        add(panel, BorderLayout.CENTER);
+    public Window(int width, int heigth) {
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setTitle("c02_brabec_adam");
         setVisible(true);
+
+        panel = new Panel(width, heigth);
+        add(panel);
         pack();
 
-        setLocationRelativeTo(null);
-
-        // lepší až na konci, aby to neukradla nějaká komponenta v případně složitějším UI
         panel.setFocusable(true);
-        panel.grabFocus(); // důležité pro pozdější ovládání z klávesnice
+        panel.grabFocus();
     }
 
     public Panel getPanel() {
         return panel;
     }
-
 }
