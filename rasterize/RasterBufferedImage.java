@@ -14,27 +14,12 @@ public class RasterBufferedImage implements Raster { //třída, která drží sa
 
     @Override
     public void setPixel(int x, int y, int color) {
-        int w = image.getWidth();
-        int h = image.getHeight();
+        int w = getWidth();
+        int h = getHeight();
 
         if(x < 0 || x > w) return;
         if(y < 0 || y > h) return;
         image.setRGB(x, y, color);
-    }
-
-    public Graphics getGraphics(){
-        return image.getGraphics();
-    }
-
-    public void draw(RasterBufferedImage raster) {
-        Graphics graphics = getGraphics();
-        graphics.setColor(new Color(color));
-        graphics.fillRect(0, 0, getWidth(), getHeight());
-        graphics.drawImage(raster.image, 0, 0, null);
-    }
-
-    public void repaint(Graphics graphics) {
-        graphics.drawImage(image, 0, 0, null);
     }
 
     @Override
@@ -61,7 +46,7 @@ public class RasterBufferedImage implements Raster { //třída, která drží sa
     @Override
     public void clear() {
         Graphics g = image.getGraphics();
-        g.clearRect(0, 0, image.getWidth(), image.getHeight());
+        g.clearRect(0, 0, getWidth(), getHeight());
     }
 
     public BufferedImage getImage() {

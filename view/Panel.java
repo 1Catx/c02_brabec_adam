@@ -17,20 +17,17 @@ public class Panel extends JPanel {
     }
 
     private static final int FPS = 1000 / 20;
-    public static final int WIDTH = 800, HEIGHT = 600;
 
     public Panel(int width, int height) {
-        setPreferredSize(new Dimension(WIDTH, HEIGHT));
-        raster = new RasterBufferedImage(WIDTH, HEIGHT);
-        raster.setClearColor(Color.BLACK.getRGB());
+        setPreferredSize(new Dimension(width, height));
+        raster = new RasterBufferedImage(width, height);
         setLoop();
     }
 
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        raster.repaint(g);
-        // pro zájemce - co dělá observer - https://stackoverflow.com/a/1684476
+        g.drawImage(raster.getImage(), 0, 0, null); // zobrazí aktuální obraz z rasteru na panel
     }
 
     private void setLoop() {
