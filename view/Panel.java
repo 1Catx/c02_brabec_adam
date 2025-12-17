@@ -11,11 +11,6 @@ import java.util.TimerTask;
 public class Panel extends JPanel {
 
     private RasterBufferedImage raster;
-
-    public Raster getRaster() {
-        return raster;
-    }
-
     private static final int FPS = 1000 / 20;
 
     public Panel(int width, int height) {
@@ -42,5 +37,9 @@ public class Panel extends JPanel {
 
     public void clear() {
         raster.clear();
+    }
+
+    public Raster getRaster() {
+        return raster;
     }
 }

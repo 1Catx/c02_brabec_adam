@@ -19,7 +19,11 @@ public class Window extends JFrame { //vytvoří instanci *Panelu*, do kterého 
         panel.grabFocus();
     }
 
+
     public Panel getPanel() {
         return panel;
     }
+
 }
+
+

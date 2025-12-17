@@ -17,15 +17,21 @@ public class RasterBufferedImage implements Raster { //třída, která drží sa
         int w = getWidth();
         int h = getHeight();
 
-        if(x < 0 || x > w) return;
-        if(y < 0 || y > h) return;
+        if(x < 0 || x >= w) return;
+        if(y < 0 || y >= h) return;
+        
         image.setRGB(x, y, color);
     }
 
     @Override
     public int getPixel(int x, int y) {
-        // TODO: druhá úloha
-        return 0;
+        int w = getWidth();
+        int h = getHeight();
+
+        if (x < 0 || x >= w) return 0;
+        if (y < 0 || y >= h) return 0;
+
+        return image.getRGB(x, y);
     }
 
     @Override

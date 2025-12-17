@@ -24,7 +24,7 @@ public abstract class LineRasterizer {
         //TODO
     }
 
-    public void rasterize(int x1, int y1, int x2, int y2, Color color) {
+    public void rasterize(int x1, int y1, int x2, int y2) {
         //TODO
     }
 

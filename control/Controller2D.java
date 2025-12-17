@@ -1,98 +1,139 @@
 package control;
 
-import rasterize.*;
 import view.Panel;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.List;
 
-import javax.swing.*;
-import java.awt.event.*;
+import model.Point;
+import model.Polygon;
+import rasterize.LineRasterizerGraphics;
 
-public class Controller2D implements Controller {
+import javax.swing.SwingUtilities; 
+import fill.SeedFill; 
 
-    private final Panel panel;
 
-    private int x,y;
-    private LineRasterizerGraphics rasterizer;
+public class Controller2D {
+    private final Panel myPanel;
+    private final LineRasterizerGraphics lr;
 
-    public Controller2D(Panel panel) {
-        this.panel = panel;
-        initObjects(panel.getRaster());
-        initListeners(panel);
+    private final Polygon poly = new Polygon();
+    private Point preview = null; //dočasná pozice při tažení
+    private boolean dragging = false;
+
+    private final int fillColor = 0x00FF00; 
+    private final int borderColor = 0xFFFFFF; 
+
+
+    public Controller2D(Panel myPanel) {
+        this.myPanel = myPanel;
+
+        this.lr = new LineRasterizerGraphics(myPanel.getRaster());
+
+        initListeners();
     }
 
-    public void initObjects(Raster raster) {
-        rasterizer = new LineRasterizerGraphics(raster);
-     }
-
-    @Override
-    public void initListeners(Panel panel) {
-        panel.addMouseListener(new MouseAdapter() {
-
+    private void initListeners() {
+        myPanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                if (e.isControlDown()) return;
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    SeedFill filler = new SeedFill(myPanel.getRaster(), e.getX(), e.getY(), fillColor);
+                    filler.fill();
+                    myPanel.repaint();
+                    return; // neprovádět logiku pro polygon
+                }
 
-                if (e.isShiftDown()) {
-                    //TODO
-                } else if (SwingUtilities.isLeftMouseButton(e)) {
-                    rasterizer.drawLine(x,y,e.getX(),e.getY());
-                    x = e.getX();
-                    y = e.getY();
-                } else if (SwingUtilities.isMiddleMouseButton(e)) {
-                    //TODO
-                } else if (SwingUtilities.isRightMouseButton(e)) {
-                    //TODO
+                if (SwingUtilities.isLeftMouseButton(e)) {
+                    dragging = true;
+                    preview = new Point(e.getX(), e.getY());
+                    drawScene();
                 }
             }
 
             @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.isControlDown()) {
-                    if (SwingUtilities.isLeftMouseButton(e)) {
-                        //TODO
-                    } else if (SwingUtilities.isRightMouseButton(e)) {
-                        //TODO
-                    }
-                }
+            public void mouseReleased(MouseEvent e) {
+                if (!SwingUtilities.isLeftMouseButton(e)) return;
+
+                if (!dragging) return;
+                dragging = false;
+                preview = null;
+                poly.addPoint(new Point(e.getX(), e.getY()));
+
+                drawScene();
             }
         });
 
-        panel.addMouseMotionListener(new MouseAdapter() {
+        myPanel.addMouseMotionListener(new MouseAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                if (e.isControlDown()) return;
+                if (!dragging) return;
 
-                if (e.isShiftDown()) {
-                    //TODO
-                } else if (SwingUtilities.isLeftMouseButton(e)) {
-                    //TODO
-                } else if (SwingUtilities.isRightMouseButton(e)) {
-                    //TODO
-                } else if (SwingUtilities.isMiddleMouseButton(e)) {
-                    //TODO
-                }
-                update();
+                Point a = poly.getSize() > 0 ? poly.getPoint(poly.getSize() - 1) : new Point(e.getX(), e.getY());
+
+                preview = new Point(e.getX(), e.getY());
+
+                drawScene();
             }
         });
 
-        panel.addKeyListener(new KeyAdapter() {
+        myPanel.addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
-            public void keyPressed(KeyEvent e) {
-                // na klávesu C vymazat plátno
-                if (e.getKeyCode() == KeyEvent.VK_C) {
-                    //TODO
+            public void keyPressed(java.awt.event.KeyEvent e) {
+                if (e.getKeyCode() == java.awt.event.KeyEvent.VK_C) {
+                    clearAll();
                 }
+                if (e.getKeyCode() == java.awt.event.KeyEvent.VK_G) { 
+                    drawScene(); }
             }
         });
     }
 
-    private void update() {
-//        panel.clear();
-        //TODO
+    private void drawScene() {
+        myPanel.getRaster().clear();
 
+        List<Point> pts = poly.getMyPoints(); //hotové hrany
+        
+        for (int i = 0; i < pts.size() - 1; i++) {
+            drawLine(pts.get(i), pts.get(i + 1));
+        }
+
+        if (!dragging && pts.size() >= 3) { //uzavření polygonu
+            drawLine(pts.get(pts.size() - 1), pts.get(0));
+        }
+
+        if (dragging && preview != null) { //náhled při tažení
+            if (pts.size() >= 1) {
+                drawLine(pts.get(pts.size() - 1), preview);
+            }
+
+            if (pts.size() >= 2) {
+                drawLine(preview, pts.get(0));
+            }
+        }
+
+        myPanel.repaint();
     }
 
-    private void hardClear() {
-        panel.clear();
+    private void drawLine(Point a, Point b) {
+        lr.rasterize(a.getX(), a.getY(), b.getX(), b.getY());
     }
 
+    private void clearAll() {
+        poly.clear();
+        preview = null;
+        dragging = false;
+
+        myPanel.getRaster().clear();
+        myPanel.repaint();
+    }
 }
+
+/*
+    Pořád bude potřeba vykreslovat polygon (levé tlačítko)
+    
+    Záplavový algoritmus ohraničený barvou pozadí (prostřední tlačítko)
+    Záplavový algoritmus ohraničený barvou hranice (pravé tlačítko)
+
+    Funkce pro kreslení obdelníka (Shift mode)
+*/
