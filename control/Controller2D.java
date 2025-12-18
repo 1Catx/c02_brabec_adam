@@ -11,6 +11,7 @@ import rasterize.LineRasterizerGraphics;
 
 import javax.swing.SwingUtilities; 
 import fill.SeedFill; 
+import fill.SeedFillBorder; 
 
 
 public class Controller2D {
@@ -21,8 +22,8 @@ public class Controller2D {
     private Point preview = null; //dočasná pozice při tažení
     private boolean dragging = false;
 
-    private final int fillColor = 0x00FF00; 
-    private final int borderColor = 0xFFFFFF; 
+    private final int fillColor = 0xFF00FF00; 
+    private final int borderColor = 0xFFFF0000;
 
 
     public Controller2D(Panel myPanel) {
@@ -38,7 +39,8 @@ public class Controller2D {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (SwingUtilities.isRightMouseButton(e)) {
-                    SeedFill filler = new SeedFill(myPanel.getRaster(), e.getX(), e.getY(), fillColor);
+                    //SeedFill filler = new SeedFill(myPanel.getRaster(), e.getX(), e.getY(), fillColor);
+                    SeedFillBorder filler = new SeedFillBorder(myPanel.getRaster(), e.getX(), e.getY(), fillColor, borderColor);
                     filler.fill();
                     myPanel.repaint();
                     return; // neprovádět logiku pro polygon
