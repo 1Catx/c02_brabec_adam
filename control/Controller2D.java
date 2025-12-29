@@ -57,12 +57,8 @@ public class Controller2D {
 
             //Pravé tlačítko – FILL
             if (SwingUtilities.isRightMouseButton(e)) {
-                SeedFillBorder filler =
-                        new SeedFillBorder(
-                                myPanel.getRaster(),
-                                e.getX(), e.getY(),
-                                fillColor, borderColor
-                        );
+                //SeedFill filler = new SeedFill(myPanel.getRaster(), e.getX(), e.getY(), fillColor);
+                SeedFillBorder filler = new SeedFillBorder(myPanel.getRaster(), e.getX(), e.getY(), fillColor, borderColor);
                 filler.fill();
                 myPanel.repaint();
                 return;
@@ -78,7 +74,6 @@ public class Controller2D {
 
         @Override
         public void mouseReleased(MouseEvent e) {
-
             //SHIFT režim – OBDELNÍK
             if (e.isShiftDown() && SwingUtilities.isLeftMouseButton(e)) {
                 handleRectangleMouseReleased(e);
@@ -99,12 +94,13 @@ public class Controller2D {
         myPanel.addMouseMotionListener(new MouseAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                    if (rectBaseDragging) {
-                    rectB = new Point(e.getX(), e.getY());
-                    // Preview zatím jen základna – obdélník spočítáme až po kliknutí na výšku
-                    drawScene();
-                    return;
-                    }
+                //SHIFT režim – táhnutí základny
+                if (rectBaseDragging) {
+                rectB = new Point(e.getX(), e.getY());
+                // Preview zatím jen základna – obdélník spočítáme až po kliknutí na výšku
+                drawScene();
+                return;
+                }
 
 
                 if (!dragging) return;
@@ -120,8 +116,10 @@ public class Controller2D {
                 if (e.getKeyCode() == java.awt.event.KeyEvent.VK_C) {
                     clearAll();
                 }
+
                 if (e.getKeyCode() == java.awt.event.KeyEvent.VK_G) { 
-                    drawScene(); }
+                    drawScene();
+                }
             }
         });
     }
@@ -149,10 +147,12 @@ public class Controller2D {
             }
         }
 
+        // SHIFT režim - Vykreslování obdelníků
         for (RectanglePolygon r : rectangles) {
             drawPolygonOutline(r);
         }
 
+        // SHIFT režim - Vykreslování náhledu obdelníku
         if (rectA != null && rectB != null && (rectBaseDragging || rectWaitingHeight)) {
             drawLine(rectA, rectB);
         }
@@ -165,7 +165,8 @@ public class Controller2D {
     }
 
     private void clearAll() {
-        poly.clear();
+        poly.clear(); //vymazání polygonů
+        rectangles.clear(); //vymazání obdelníků
         preview = null;
         dragging = false;
 
@@ -228,12 +229,7 @@ public class Controller2D {
 }
 
 /*
-    Pořád bude potřeba vykreslovat polygon (levé tlačítko)
-    
-    Záplavový algoritmus ohraničený barvou pozadí (prostřední tlačítko)
-    Záplavový algoritmus ohraničený barvou hranice (pravé tlačítko)
-
-    Funkce pro kreslení obdelníka (Shift mode)
-
-    C aby mazalo i RectanglePolygon
+    Ořezávání 
+    Scan-line
+    Bonus: PatternFill
 */
