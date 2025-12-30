@@ -11,7 +11,7 @@ import model.RectanglePolygon;
 import rasterize.LineRasterizerGraphics;
 
 import javax.swing.SwingUtilities; 
-import fill.SeedFill; 
+import fill.SeedFill; // momentálně nepoužívaná ale připravená na přepnutí mezi SeedFillem a SeedFillBorder
 import fill.SeedFillBorder; 
 
 
@@ -31,16 +31,28 @@ public class Controller2D {
     private Point rectA = null;
     private Point rectB = null;
 
-    private RectanglePolygon rectPreview = null;
     private final java.util.List<RectanglePolygon> rectangles = new java.util.ArrayList<>();
+
+    private final Polygon clipper = new Polygon();
+    private boolean clipperEnabled = true; //kvůli mazání -> C
+
+    private void initClipper() {
+        clipper.addPoint(new Point(150, 120));
+        clipper.addPoint(new Point(650, 130));
+        clipper.addPoint(new Point(740, 260));
+        clipper.addPoint(new Point(620, 520));
+        clipper.addPoint(new Point(200, 500));
+    }
 
 
     public Controller2D(Panel myPanel) {
         this.myPanel = myPanel;
-
         this.lr = new LineRasterizerGraphics(myPanel.getRaster());
 
+        initClipper(); // vytvoří fixní polygon + clipperEnabled = true
         initListeners();
+
+        drawScene();
     }
 
     private void initListeners() {
@@ -96,15 +108,13 @@ public class Controller2D {
             public void mouseDragged(MouseEvent e) {
                 //SHIFT režim – táhnutí základny
                 if (rectBaseDragging) {
-                rectB = new Point(e.getX(), e.getY());
-                // Preview zatím jen základna – obdélník spočítáme až po kliknutí na výšku
-                drawScene();
-                return;
+                    rectB = new Point(e.getX(), e.getY());
+                    drawScene();
+                    return;
                 }
 
 
                 if (!dragging) return;
-                //Point a = poly.getSize() > 0 ? poly.getPoint(poly.getSize() - 1) : new Point(e.getX(), e.getY());
                 preview = new Point(e.getX(), e.getY());
                 drawScene();
             }
@@ -127,17 +137,35 @@ public class Controller2D {
     private void drawScene() {
         myPanel.getRaster().clear();
 
-        List<Point> pts = poly.getMyPoints(); //hotové hrany
-        
+        drawUserPolygonWithPreview(); // uživatelský polygon + jeho náhled
+        drawRectanglesWithPreview(); //  obdélníky (Shift) + náhled základny
+
+        // fixní polygon + scanline fill výsledku
+        if (clipperEnabled) {
+            Polygon clipped = clip.Clipper.clipConvex(poly, clipper);
+            fill.ScanLine.fillPolygon(myPanel.getRaster(), clipped, fillColor);
+
+            drawPolygonOutline(clipper);
+        }
+
+        myPanel.repaint();
+    }
+
+    private void drawUserPolygonWithPreview() {
+        List<Point> pts = poly.getMyPoints();
+
+        // hotové hrany
         for (int i = 0; i < pts.size() - 1; i++) {
             drawLine(pts.get(i), pts.get(i + 1));
         }
 
-        if (!dragging && pts.size() >= 3) { //uzavření polygonu
+        // uzavření polygonu (když netáhnu)
+        if (!dragging && pts.size() >= 3) {
             drawLine(pts.get(pts.size() - 1), pts.get(0));
         }
 
-        if (dragging && preview != null) { //náhled při tažení
+        // náhled při tažení
+        if (dragging && preview != null) {
             if (pts.size() >= 1) {
                 drawLine(pts.get(pts.size() - 1), preview);
             }
@@ -146,18 +174,18 @@ public class Controller2D {
                 drawLine(preview, pts.get(0));
             }
         }
+    }
 
-        // SHIFT režim - Vykreslování obdelníků
+    private void drawRectanglesWithPreview() {
+        // uložené obdélníky
         for (RectanglePolygon r : rectangles) {
             drawPolygonOutline(r);
         }
 
-        // SHIFT režim - Vykreslování náhledu obdelníku
+        // náhled základny obdélníku
         if (rectA != null && rectB != null && (rectBaseDragging || rectWaitingHeight)) {
             drawLine(rectA, rectB);
         }
-
-        myPanel.repaint();
     }
 
     private void drawLine(Point a, Point b) {
@@ -167,8 +195,10 @@ public class Controller2D {
     private void clearAll() {
         poly.clear(); //vymazání polygonů
         rectangles.clear(); //vymazání obdelníků
+
         preview = null;
         dragging = false;
+        clipperEnabled = false;
 
         myPanel.getRaster().clear();
         myPanel.repaint();
@@ -188,7 +218,6 @@ public class Controller2D {
             rectBaseDragging = false;
             rectA = null;
             rectB = null;
-            rectPreview = null;
 
             drawScene();
             return;
@@ -201,7 +230,6 @@ public class Controller2D {
         rectA = new Point(e.getX(), e.getY());
         rectB = new Point(e.getX(), e.getY());
 
-        rectPreview = new RectanglePolygon();
         drawScene();
     }
 
@@ -216,20 +244,12 @@ public class Controller2D {
 
     private void drawPolygonOutline(Polygon p) {
         List<Point> pts = p.getMyPoints();
-        if (pts.size() < 2) return;
 
         for (int i = 0; i < pts.size(); i++) {
-            Point a = pts.get(i);
-            Point b = pts.get((i + 1) % pts.size());
+            Point a = pts.get(i); // aktuální bod polygonu
+            Point b = pts.get((i + 1) % pts.size()); // vezme další bod a spojí ho s prvním (na konci modulo vrací zpátky na začátek)
             drawLine(a, b);
         }
     }
 
-
 }
-
-/*
-    Ořezávání 
-    Scan-line
-    Bonus: PatternFill
-*/
